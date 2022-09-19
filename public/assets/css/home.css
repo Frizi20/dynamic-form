@@ -12,8 +12,9 @@ body,html{
 }
 
 .wrapper{
+    padding: 100px 0;
     background-color: #fdfdfd;
-    height: 100%;
+    min-height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -102,4 +103,30 @@ select option{
 .form-container button:hover{
     background: #236bbd;
 
+}
+
+/* Radio inputs */
+
+.radio-container .radio-wrapper{
+    display: flex;
+    margin-bottom: 3px;
+}
+
+.radio-container .radio-wrapper label{
+    display: flex;
+    justify-content: space-between;
+    padding:5px;
+    margin-left: 10px;
+    flex: 1;
+}
+
+
+.input-wrapper{
+	position: relative;
+}
+
+.input-wrapper input{
+	width: 100%;
+	font-size: 16px;
+	padding: 10px;
 }

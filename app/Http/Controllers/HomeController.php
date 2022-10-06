@@ -18,10 +18,10 @@ class HomeController extends Controller
 
     public function get_form_structure(){
 
-        $question  = Question::with('answer')->get();
+        $question  = Question::with('answer')->orderBy('order')->get();
 
-    
-        
+
+
         return response()->json( $question);
 
     }

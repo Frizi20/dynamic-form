@@ -15,4 +15,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
 
+Route::get('/brutusin', [App\Http\Controllers\BrutusinController::class, 'index']);
+
 Route::get('/get_form_structure',[App\Http\Controllers\HomeController::class, 'get_form_structure']);

@@ -25,12 +25,14 @@ form{
     background-color: #fbfbfb;
     padding: 20px;
     width: 400px;
+	max-height: 600px;
     min-height: 500px;
     position: relative;
     /* outline: 1px solid grey; */
     border-radius: 10px;
     box-shadow: -3px 4px 10px 1px #bbbbbb;
     padding-bottom: 50px;
+	overflow-y: auto ;
 }
 .question-container{
     display: flex;

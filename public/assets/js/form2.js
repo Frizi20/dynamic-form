@@ -1,11 +1,11 @@
 const form = document.querySelector('form');
 const submit = document.querySelector('button[type="submit"]');
-
+let formInputs = []
 let formStructure;
 
 submit.addEventListener('click', (e) => {
     e.preventDefault();
-    console.log(e);
+    submitForm();
 });
 
 const getFormStructure = async function () {
@@ -16,7 +16,7 @@ const getFormStructure = async function () {
 
     // console.table(formStructure);
     console.table(formStructure);
-    addFormInputs(data);
+    addFormInputs(formStructure);
 };
 
 const addFormInputs = function (formInputs) {
@@ -29,10 +29,8 @@ const addFormInputs = function (formInputs) {
             !rootBranches.includes(formInput.branch) ||
             formInput.branch == '0'
         ) {
-            addInput(formInput, false);
+            addInput(formInput, false, form);
             rootBranches.push(formInput.branch);
-        } else {
-            addInput(formInput, true);
         }
     });
 
@@ -47,7 +45,7 @@ const addFormInputs = function (formInputs) {
     // });
 };
 
-const addInput = function (formInput, isHidden) {
+const addInput = function (formInput, isHidden = true, placeDom) {
     const firstQuestion = formInput;
 
     if (firstQuestion.input_type == 'select') {
@@ -90,7 +88,8 @@ const addInput = function (formInput, isHidden) {
             selectElement.outerHTML,
             firstQuestion.id,
             firstQuestion.branch,
-            isHidden
+            isHidden,
+            placeDom //DOM element where to create it
         );
 
         //Add next element basted on option selection
@@ -124,13 +123,22 @@ const addInput = function (formInput, isHidden) {
             radioButttonsContainer.outerHTML,
             firstQuestion.id,
             firstQuestion.branch,
-            isHidden
+            isHidden,
+            placeDom //DOM element where to create it
         );
 
+        //Get all inputs from the radio container
         const radioButtons = insertedRadioContainer.querySelectorAll(`[name]`);
 
         radioButtons.forEach((radioBtn) => {
-            radioBtn.addEventListener('change', answerSelected.bind(this, firstQuestion.id));
+            const nextQ = radioBtn.dataset.nextQ;
+
+            if (Number(nextQ) !== 0) {
+                radioBtn.addEventListener(
+                    'change',
+                    answerSelected.bind(this, firstQuestion.id)
+                );
+            }
         });
 
         //Create radio HTML
@@ -148,7 +156,8 @@ const addInput = function (formInput, isHidden) {
             html,
             firstQuestion.id,
             firstQuestion.branch,
-            isHidden
+            isHidden,
+            placeDom
         );
     }
 };
@@ -158,7 +167,8 @@ const addQuestionElement = function (
     options,
     dataId,
     branchNr,
-    isHidden
+    isHidden,
+    placeDom = form
 ) {
     const html = `
         <div ${isHidden ? 'style="display:none"' : ''}
@@ -169,26 +179,51 @@ const addQuestionElement = function (
             ${options}
         </div>
         `;
-    form.insertAdjacentHTML('beforeend', html);
+
+    const position = placeDom.tagName === 'FORM' ? 'beforeend' : 'afterend';
+
+    placeDom.insertAdjacentHTML(position, html);
     return document.querySelector(`[data-input-id ='${dataId}']`);
 };
 
 function answerSelected(id, event) {
     const { type: inputType } = event.target;
 
-	const curentDomQuestion = document.querySelector(`[data-q-id="${id}"]`)
-	const currentQuestionBranches = Array.from(document.querySelectorAll(`[data-branch-nr="${curentDomQuestion.dataset.branchNr}"]`))
-	let currQuestionIndex = -1
+    const currentDomQuestion = document.querySelector(`[data-q-id="${id}"]`);
+    const currentQuestionBranches = Array.from(
+        document.querySelectorAll(
+            `[data-branch-nr="${currentDomQuestion.dataset.branchNr}"]`
+        )
+    );
+    let currQuestionIndex = -1;
+    currentQuestionBranches.forEach((question, i, arr) => {
+        if (question == currentDomQuestion) {
+            currQuestionIndex = i;
+        }
+    });
+    const nextBranchElements = currentQuestionBranches.slice(
+        currQuestionIndex + 1,
+        currentQuestionBranches.length
+    );
 
-	currentQuestionBranches.forEach((question,i,arr)=>{
-		if(question == curentDomQuestion){
-			currQuestionIndex = i
-		}
-	})
+    console.log(currentDomQuestion);
 
-	const nextBranchElements = currentQuestionBranches.slice(currQuestionIndex + 1, currentQuestionBranches.length)
+    nextBranchElements.forEach((nextEl) => nextEl.remove());
 
-	nextBranchElements.forEach(nextEl => nextEl.style.display = 'none')
+    if (inputType === 'select-one') {
+        //Get next question form structure data
+        const selectedIndex = event.target.options.selectedIndex;
+        const selectedOption = event.target.options[selectedIndex];
+        const nextQuestionId = selectedOption.dataset.nextQ;
+
+        const nextQuestion = formStructure.find((question) => {
+            return question.id == Number(nextQuestionId);
+        });
+
+        addInput(nextQuestion, false, currentDomQuestion);
+
+        // console.log(nextQuestionId)
+    }
 
     // //Select all available questions
     // const allQuestionInputs = Array.from(
@@ -212,32 +247,38 @@ function answerSelected(id, event) {
     if (inputType === 'select-one') {
         const selectedIndex = event.target.options.selectedIndex;
         const selectedOption = event.target.options[selectedIndex];
-		const nextQuestionId = selectedOption.dataset.nextQ
+        const nextQuestionId = selectedOption.dataset.nextQ;
+
+        // addInput(nextQuestion, false, currentDomQuestion);
+
         // document.querySelector(`[data-q-id="]"`)
 
+        // document.querySelector(`[data-q-id='${nextQuestionId}']`).style = {};
 
-        document.querySelector(
-            `[data-q-id='${nextQuestionId}']`
-        ).style = {};
+        // return;
+        // const nextQuestion = formStructure.find(
+        //     (el) => selectedOption.dataset.nextQ == el.id
+        // );
 
-        return;
-        const nextQuestion = formStructure.find(
-            (el) => selectedOption.dataset.nextQ == el.id
-        );
-
-        addInput(nextQuestion);
+        // addInput(nextQuestion);
     }
-
-	return
 
     if (inputType == 'radio') {
         // const sele
         const nextQuestion = formStructure.find((el) => {
             return event.target.dataset.nextQ == el.id;
         });
-        console.log(nextQuestion);
-        addInput(nextQuestion);
+
+        addInput(nextQuestion, false, currentDomQuestion);
     }
 }
+
+
+
+function submitForm(){
+	console.log(form)
+}
+
+
 
 getFormStructure();

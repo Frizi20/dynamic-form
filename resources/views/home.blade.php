@@ -18,12 +18,13 @@
 
 
                 <button type="submit">Trimite</button>
-				
+
             </form>
         </div>
     </div>
 
-    <script src="{{ asset('assets/js/form.js') }}"></script>
+    {{-- <script src="{{ asset('assets/js/form.js') }}"></script> --}}
+    <script src="{{ asset('assets/js/form2.js') }}"></script>
 
     <script></script>
 

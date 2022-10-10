@@ -17,4 +17,10 @@ Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
 
 Route::get('/brutusin', [App\Http\Controllers\BrutusinController::class, 'index']);
 
+Route::get('/json-forms', [App\Http\Controllers\JsonFormsController::class, 'index']);
+
 Route::get('/get_form_structure',[App\Http\Controllers\HomeController::class, 'get_form_structure']);
+
+
+Route::post('/json-forms/create', [App\Http\Controllers\JsonFormsController::class, 'create']);
+

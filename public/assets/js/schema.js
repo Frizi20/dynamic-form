@@ -93,21 +93,71 @@
 //     }
 // };
 
-
 const schema = {
-	title:'Json Form',
-	type:'object',
-	properties:{
-		name:{
-			type:'string'
-		},
-		gender:{
-			type: "array",
-			uniqueItems: true,
-			items: {
-			  type: "string",
-			  enum: ["value1","value2"]
+    title: 'Json Form',
+    type: 'object',
+    options: {
+        // collapsed:true
+    },
+    properties: {
+        firstName: {
+            type: 'string',
+            title: 'Nume de familie'
+        },
+        lastName: {
+            type: 'string',
+            title: 'Prenume'
+        },
+        age: {
+            title: 'Varsta',
+            type: 'integer',
+            default: ''
+        },
+        address: {
+            title: 'Adresa',
+            type: 'string'
+			
+        },
+        city: {
+            type: 'select',
+			title:'Oras',
+			default:"",
+			required:true,
+            format: 'select',
+			enum: ['', '1', '2', '3', '4'],
+			options:{
+				enum_titles:['Slobozia','Bucuresti','Timisioara','Brasov']
 			}
-		}
-	}
-}
+
+        },
+        gender: {
+            type: 'string',
+            title: 'Gender',
+            description: 'Active Radio buttons',
+            format: 'radio',
+            enum: ['1', '2', '3', '4'],
+            options: {
+                input_height: '450px',
+                enum_titles: ['ceva', 'doi', 'trei', 'patru']
+            }
+        },
+        submit: {
+            type: 'button',
+            title: 'Submit',
+            options: {
+                button: {
+                    action: 'submitForm',
+                    // validated:true
+                    rqeuired: false
+                },
+                inputAttributes: {
+                    class: 'btn btn-secondary btn-sm json-editor-btn btn-center'
+                },
+                containerAttributes: {
+                    class: 'myContainer'
+                }
+            }
+        }
+    },
+    required: []
+};

@@ -102,7 +102,8 @@ const schema = {
     properties: {
         firstName: {
             type: 'string',
-            title: 'Nume de familie'
+            title: 'Nume de familie',
+			propertyOrder:1
         },
         lastName: {
             type: 'string',
@@ -116,7 +117,7 @@ const schema = {
         address: {
             title: 'Adresa',
             type: 'string'
-			
+
         },
         city: {
             type: 'select',

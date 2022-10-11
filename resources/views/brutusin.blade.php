@@ -56,82 +56,119 @@
 	<script src="{{ asset('assets/js/schema.js') }}"></script>
 	<!-- JavaScript Bundle with Popper -->
 
-	<script>
-		const element = document.getElementById('editor_holder');
+	<script defer>
 
-		// Set an option globally
-		// JSONEditor.defaults.options.theme = 'bootstrap4';
+		function init(){
 
-		// Set an option during instantiation
+			const element = document.getElementById('editor_holder');
 
-		JSONEditor.prototype.showErrors = function() {
-  			this.setOption('show_errors','always');
-		}
-		JSONEditor.prototype.hideErrors = function() {
-		  this.setOption('show_errors','never');
-		}
-
-		const editor = new JSONEditor(element, {
-		  schema:schema,
-		  theme: 'bootstrap4',
-		  disable_array_delete:false,
-		  disable_array_delete_last_row:false,
-		  disable_collapse:true,
-		  required_by_default:false,
-		  disable_edit_json:true,
-		  disable_properties:true
-		});
-
-
-
-
-		JSONEditor.defaults.callbacks = {
-  		  button : {
-			submitForm : function (jseditor, e) {
-				const errors = editor.validate()
-				if(errors.length !== 0){
-					editor.showErrors()
-				}else{
-					//Post form Data
-					const data = editor.getValue()
-					postForm(JSON.stringify(data))
-
-				}
-  		    }
-  		  }
-  		}
-
-
-		JSONEditor.defaults.custom_validators.push((schema, value, path)=>{
-			const errors = []
-
-			console.log(schema)
-
-			if(schema.type == 'string'  && value.length < 1){
-				errors.push({
-				path: path,
-				property: 'format',
-				message: `Campul ${schema.title} trebuie completat`
-				});
+			JSONEditor.prototype.showErrors = function() {
+  				this.setOption('show_errors','always');
 			}
-			return errors
-		})
+			JSONEditor.prototype.hideErrors = function() {
+			  this.setOption('show_errors','never');
+			}
 
-		async function postForm(data){
+			JSONEditor.defaults.callbacks = {
+				button : {
+				submitForm : function (jseditor, e) {
+						const errors = jseditor.jsoneditor.validate()
+						console.log(errors)
+						if(errors.length !== 0){
+							jseditor.jsoneditor.showErrors()
+						}else{
+							console.log(jseditor)
+							//Post form Data
+							const data = jseditor.jsoneditor.getValue()
+							postForm(JSON.stringify(data))
 
-			const rawResponse = await fetch('/json-forms/create', {
-				method: 'POST',
-				headers: {
-					'Accept': 'application/json',
-					'Content-Type': 'application/json',
-					'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
-					},
-				body: data
-			});
-			const content = await rawResponse.json();
+						}
+					}
+				}
+			}
 
-			console.log(content);
+			JSONEditor.defaults.custom_validators.push((schema, value, path)=>{
+				const errors = []
+
+
+				if(schema.type == 'string'  && value.length < 1){
+					errors.push({
+					path: path,
+					property: 'format',
+					message: `Campul ${schema.title} trebuie completat`
+					});
+				}
+				return errors
+			})
+
+			const getSchemaData = async function(){
+
+				try {
+					const response = await fetch('/get-form-schema')
+					if(!response?.ok) throw new Error('Schema could not be fetched!')
+					const schemaData = await response.json()
+					const schema = schemaData.schema
+					return schema
+				} catch (error) {
+					console.error(error)
+					return ''
+				}
+
+
+			}
+
+			const createForm = async function () {
+
+				try {
+					const schema = await  getSchemaData()
+					if(!schema) throw new Error('No schema to build form')
+
+					const parsedSchema = JSON.parse(schema)
+
+					console.log(parsedSchema)
+
+					const editor = new JSONEditor(element, {
+					  schema:parsedSchema,
+					  theme: 'bootstrap4',
+					  disable_array_delete:false,
+					  disable_array_delete_last_row:false,
+					  disable_collapse:true,
+					  required_by_default:false,
+					  disable_edit_json:true,
+					  disable_properties:true
+					});
+
+
+				} catch (error) {
+					console.error(error)
+				}
+
+
+
+			}
+
+			async function postForm(data){
+
+				const rawResponse = await fetch('/json-forms/create', {
+					method: 'POST',
+					headers: {
+						'Accept': 'application/json',
+						'Content-Type': 'application/json',
+						'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
+						},
+					body: data
+				});
+				const content = await rawResponse.json();
+
+				console.log(content);
+			}
+
+			createForm()
+
 		}
+
+		init()
+
 
 		// override class method
 		// JSONEditor.defaults.editors.integer.prototype.sanitize = function(value) {

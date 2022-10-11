@@ -21,6 +21,12 @@ Route::get('/json-forms', [App\Http\Controllers\JsonFormsController::class, 'ind
 
 Route::get('/get_form_structure',[App\Http\Controllers\HomeController::class, 'get_form_structure']);
 
+//
 
 Route::post('/json-forms/create', [App\Http\Controllers\JsonFormsController::class, 'create']);
 
+Route::get('/get-form-schema',[App\Http\Controllers\JsonFormsController::class,'getFormSchema']);
+
+Route::get('/survey-builder',[App\Http\Controllers\JsonFormsController::class,'buildSurvey']);
+
+Route::post('/update-schema',[App\Http\Controllers\JsonFormsController::class,'updateSchema']);

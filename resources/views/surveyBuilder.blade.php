@@ -19,7 +19,7 @@
 			margin: 0;
 			padding: 0;
 			box-sizing: border-box;
-			min-height: 100vh;
+			min-height: 1000px;
 			height: 100%;
 			background-color: #fff;
 			font-family: sans-serif;
@@ -40,7 +40,7 @@
 		}
 
 		.form-builder-container {
-			height: 500px;
+			min-height: 500px;
 			width: 700px;
 			border: 1px solid grey;
 			overflow: auto;
@@ -186,9 +186,7 @@
 
 
 	<script defer>
-		// form-builder
-	// 		form-field
-	// 			form-group
+
 
 		let formSchemaData
 		let globalSchemaProps
@@ -199,6 +197,175 @@
 		const getSchemaInput = function(){
 			return jsonStructureDom.querySelector('textarea')
 		}
+
+		class allDraggables {
+
+			static draggableElements = []
+
+			constructor(){
+				allDraggables.draggableElements.push(this)
+			}
+
+			static getDraggables(){
+				return this.draggableElements
+			}
+
+		}
+
+		//Draggable element class
+
+		class Draggable extends allDraggables {
+
+			 draggedElement
+			 draggableIsClicked = false
+			 pointerInitialX
+			 pointerInitialY
+			 elInitialX
+			 elInitialY
+
+			constructor(domElement){
+
+				super()
+
+				this.draggedElement = domElement
+
+				//getCurrentCoords
+				this.getCurrentCoordonates()
+				//add event listeners
+				this.addEventListeners()
+
+			}
+
+			addEventListeners(){
+				this.draggedElement.addEventListener('mousemove', this.move.bind(this),true)
+				this.draggedElement.addEventListener('mousedown', this.clickDown.bind(this), true)
+				this.draggedElement.addEventListener('mouseup', this.clickUp.bind(this), true)
+			}
+
+			move(e){
+				if (this.draggableIsClicked) {
+					this.draggedElement.style.removeProperty('transform');
+
+					const moveX = (this.pointerInitialX - e.pageX) * -1
+					const moveY = (this.pointerInitialY - e.pageY) * -1
+					const elementCurrentX = this.elInitialX + moveX
+					const elementCurrentY = this.elInitialY + moveY
+
+
+
+					this.draggedElement.style.left = (elementCurrentX) + 'px'
+					this.draggedElement.style.top = (elementCurrentY) + 'px'
+
+					this.checkCollision()
+
+				}
+			}
+
+			checkCollision(){
+
+				const draggableEls = allDraggables.getDraggables()
+
+				console.log(draggableEls)
+
+				const draggableElsPos = draggableEls.map(el=>{
+					if(el.draggedElement !== this.draggedElement){
+						el.getCurrentCoordonates()
+
+					}
+
+					return {
+						draggedElement:el.draggedElement,
+						x:el.elInitialX,
+						y:el.elInitialY,
+
+					}
+				})
+
+				const currElX = this.draggedElement.getBoundingClientRect().left + window.scrollX
+				const currElY = this.draggedElement.getBoundingClientRect().top + window.scrollY
+
+				draggableElsPos.forEach((draggable,i) => {
+					if(i === 2){
+
+						if(draggable.y - currElY < 0){
+							console.log(draggable)
+						}
+
+					}
+				});
+				// console.log(this.draggedElement.getBoundingClientRect().left + window.scrollX)
+				// console.log()
+			}
+
+
+			clickDown(e){
+				if(!e.target.className.includes('form-field')) return
+
+				const formField = e.target
+				const {width,height,left,top} = formField.getBoundingClientRect()
+
+				this.draggedElement = formField
+
+				Object.assign(formField.style, {
+					position:'absolute',
+					width:`${ width}px`,
+					height: `${height}px`,
+					left: `${window.scrollX + left}px`,
+					top: `${window.scrollY + top - 20}px`,
+					zIndex:200
+				})
+
+				let {
+						left: elementX,
+						top: elementY
+					} = e.target.getBoundingClientRect()
+
+				this.pointerInitialX = e.clientX
+				this.pointerInitialY = e.pageY
+
+				this.elInitialX = elementX + window.scrollX
+				this.elInitialY = elementY + document.documentElement.scrollTop - 20
+
+				console.log(this.elInitialX)
+				console.log(this.pointerInitialX)
+
+				this.draggableIsClicked = true
+
+
+				formField.style.opacity = 0.8
+			}
+
+			clickUp(e){
+				if(!e.target.className.includes('form-field')) return
+
+				Object.assign(this.draggedElement.style,{
+					position:'relative',
+					width:'auto',
+					height:'auto',
+					left:0,
+					top:0,
+					zIndex:0
+				})
+
+				this.draggableIsClicked = false
+				e.target.style.opacity = 1
+			}
+
+			getCurrentCoordonates(){
+
+				const {left: elementX,top: elementY} = this.draggedElement.getBoundingClientRect()
+
+				this.elInitialX = elementX + window.scrollX
+				this.elInitialY = elementY + window.scrollY
+
+			}
+
+		}
+
+
+
+
+
 
 		//Get schema json from database
 		const getFormSchema = async function(){
@@ -218,7 +385,7 @@
 		const displayFormStructure = async function(){
 			const schemaStruct = await getFormSchema()
 
-			console.log(JSON.parse(schemaStruct.schema))
+
 			const schema = schemaStruct.schema
 			formSchemaData = schemaStruct
 
@@ -244,7 +411,6 @@
 			// formBuilderContainer.append(formDiv)
 
 			const schemaProp = JSON.parse(schema).properties
-			globalSchemaProps = schemaProp
 
 			// Sort the properties by "propertyOrder"
 
@@ -252,22 +418,14 @@
 			// 	return a.propertyOrder - b.propertyOrder
 			// }))
 
-			const arr = [
-				['f',1],
-				['a',4],
-				['c',5],
-				['d'],
-				['e',0]
-			]
 
-			arr.sort((a,b)=>{
-				const x = a[1] ?? 0
-				const y = b[1] ?? 0
+			//Sort inputs based on the propertyOrder property
+			const sortedProps = Object.fromEntries(Object.entries(schemaProp).sort(([,a],[,b])=>{
+				return a.propertyOrder - b.propertyOrder
+			}))
 
-				return y-x
-			})
+			globalSchemaProps = sortedProps
 
-			console.log(arr)
 
 			//Add each input with each property of the schema
 			for (const [key, value] of Object.entries(globalSchemaProps)) {
@@ -283,7 +441,6 @@
 			}
 
 			//addEventListeners
-
 			addEventListeners()
 
 			if(callback && typeof(callback) === "function"){
@@ -293,133 +450,18 @@
 
 		}
 
-		let draggedElement
-		let draggableIsClicked = false
 
-		let pointerInitialX
-		let pointerInitialY
-
-		let elInitialX
-		let elInitialY
 
 		function addEventListeners(){
 			const draggables = document.querySelectorAll('.form-field')
-
-
-
 			draggables.forEach(draggable =>{
-
-				draggable.addEventListener('click', clickedElement, true)
-				draggable.addEventListener('mousemove', move,true)
-				draggable.addEventListener('mousedown', clickDown, true)
-				draggable.addEventListener('mouseup', clickUp, true)
-
-  				// draggable.addEventListener('dragstart', drag);
-  				// draggable.addEventListener('dragstart', dragStart);
-  				// draggable.addEventListener('dragenter', dragEnter);
-  				// draggable.addEventListener('dragover', dragOver);
-  				// draggable.addEventListener('dragleave', dragLeave);
-  				// draggable.addEventListener('drop', dragDrop);
-  				// draggable.addEventListener('dragend', dragEnd);
+				const draggableInstance = new Draggable(draggable)
 
 			})
 
 		}
 
 
-
-		function move(e) {
-			if (draggableIsClicked) {
-                    draggedElement.style.removeProperty('transform');
-
-
-                    let moveX = (pointerInitialX - e.pageX) * -1
-                    let moveY = (pointerInitialY - e.pageY) * -1
-                    const elementCurrentX = elInitialX + moveX
-                    const elementCurrentY = elInitialY + moveY
-
-					console.log(elementCurrentX)
-
-                    draggedElement.style.left = (elementCurrentX) + 'px'
-                    draggedElement.style.top = (elementCurrentY) + 'px'
-                }
-		}
-
-		function clickedElement(e){
-
-			// let {
-            //         left: elementX,
-            //         top: elementY
-            //     } = e.target.getBoundingClientRect()
-
-			// elInitialX = elementX + window.scrollX
-			// elInitialY = elementY + document.documentElement.scrollTop
-
-
-			// console.log(elInitialY)
-			// console.log(originalRec)
-			//hide original field
-			// originalFormField.classList.add('hidden')
-
-
-
-		}
-
-
-		function clickDown(e){
-			const formField = e.target
-			const {width,height,left,top} = formField.getBoundingClientRect()
-
-			console.log(formField.closest('.form-field'))
-			// return
-
-			draggedElement = formField
-			Object.assign(formField.style, {
-				position:'absolute',
-				width:`${ width}px`,
-				height: `${height}px`,
-				left: `${window.scrollX + left}px`,
-				top: `${window.scrollY + top - 20}px`,
-				zIndex:200
-			})
-
-			let {
-                    left: elementX,
-                    top: elementY
-                } = e.target.getBoundingClientRect()
-
-			pointerInitialX = e.clientX
-			pointerInitialY = e.pageY
-
-			elInitialX = elementX + window.scrollX
-			elInitialY = elementY + document.documentElement.scrollTop
-
-			console.log(elInitialX)
-			console.log(pointerInitialX)
-
-			draggableIsClicked = true
-
-
-			formField.style.opacity = 1
-			// const clonedFormField = e.target.cloneNode(true)
-
-
-			// console.log('drag-start', e)
-		}
-
-		function clickUp(e){
-			// if(!e.target.classList.includes('form-field')) return
-			console.log(e.target.className.includes('form-field'))
-			Object.assign(draggedElement.style,{
-				position:'relative',
-				width:'auto',
-				height:'auto',
-				left:0,
-				top:0
-			})
-			draggableIsClicked = false
-			e.target.style.opacity = 1
-		}
 
 		//Create container of the inputs with the field actions
 		function createFormField(schemaProp){
@@ -447,9 +489,7 @@
 		}
 
 		//Remove form field and delete data from the objectSchema
-
 		function removeFormField(e){
-
 
 			const btnClicked = e.target.closest('.remove-input')
 			if(!btnClicked) return

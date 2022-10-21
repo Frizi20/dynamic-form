@@ -201,6 +201,7 @@
 		class allDraggables {
 
 			static draggableElements = []
+			static lastDraggedOverEl = ''
 
 			constructor(){
 				allDraggables.draggableElements.push(this)
@@ -223,6 +224,8 @@
 			 elInitialX
 			 elInitialY
 
+			 lastDragged
+
 			constructor(domElement){
 
 				super()
@@ -237,8 +240,8 @@
 			}
 
 			addEventListeners(){
-				this.draggedElement.addEventListener('mousemove', this.move.bind(this),true)
 				this.draggedElement.addEventListener('mousedown', this.clickDown.bind(this), true)
+				document.addEventListener('mousemove', this.move.bind(this),true)
 				this.draggedElement.addEventListener('mouseup', this.clickUp.bind(this), true)
 			}
 
@@ -265,7 +268,7 @@
 
 				const draggableEls = allDraggables.getDraggables()
 
-				console.log(draggableEls)
+				// console.log(draggableEls)
 
 				const draggableElsPos = draggableEls.map(el=>{
 					if(el.draggedElement !== this.draggedElement){
@@ -277,18 +280,30 @@
 						draggedElement:el.draggedElement,
 						x:el.elInitialX,
 						y:el.elInitialY,
-
+						width:el.draggedElement.getBoundingClientRect().width,
+						height:el.draggedElement.getBoundingClientRect().height
 					}
 				})
 
 				const currElX = this.draggedElement.getBoundingClientRect().left + window.scrollX
 				const currElY = this.draggedElement.getBoundingClientRect().top + window.scrollY
+				const currElHeight = this.draggedElement.getBoundingClientRect().height
+				const currElWidth = this.draggedElement.getBoundingClientRect().width
+
 
 				draggableElsPos.forEach((draggable,i) => {
-					if(i === 2){
+					if(draggable.draggedElement !== this.draggedElement){
 
-						if(draggable.y - currElY < 0){
-							console.log(draggable)
+						if(((currElHeight + currElY - 30)> draggable.y) &&
+							currElY + 25 < draggable.y + draggable.height){
+
+								allDraggables.lastDraggedOverEl = draggable.draggedElement
+								this.lastDragged = draggable.draggedElement
+								draggable.draggedElement.style.opacity = 0.5
+
+
+						}else{
+							draggable.draggedElement.style.opacity = 1
 						}
 
 					}
@@ -349,6 +364,11 @@
 
 				this.draggableIsClicked = false
 				e.target.style.opacity = 1
+
+				if(this.lastDragged){
+					this.lastDragged.style.opacity = 1
+					this.lastDragged = undefined
+				}
 			}
 
 			getCurrentCoordonates(){

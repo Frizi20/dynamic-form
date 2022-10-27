@@ -5,7 +5,7 @@ const schema = {
             description: 'Please enter full name',
             type: 'string',
 			required:{
-				
+
 			}
 
         },
@@ -59,3 +59,11 @@ const schema = {
         $(formElt).jsonFormErrors(errors, formObject);
     }
 };
+
+
+
+
+
+
+
+

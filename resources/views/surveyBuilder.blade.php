@@ -33,7 +33,7 @@
 
 		.wrapper {
 			width: 100%;
-			height: 100%;
+			min-height: 100%;
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -47,18 +47,22 @@
 		}
 
 		.form-json {
-			position: absolute;
-			right: 10px;
+			/* position: absolute; */
+			/* right: 10px;
 			top: 50%;
 			transform: translateY(-50%);
-			height: 500px;
+			*/
+			display: flex;
+			flex-direction: column-reverse;
 			width: 500px;
+			height: 500px;
+			margin-right: 15px;
 			/* overflow-y: auto; */
 		}
 
 		.btn-update-schema {
-			position: absolute;
-			bottom: -40px;
+			position: relative;
+			bottom: -5px;
 			left: 50%;
 			transform: translateX(-50%);
 			font-size: 18px;
@@ -67,6 +71,46 @@
 			border-radius: 5px;
 			background: #47a547;
 			cursor: pointer;
+			width: fit-content;
+		}
+
+		.form-builder-header {
+			display: flex;
+			justify-content: flex-end;
+		}
+
+		.add-form-field {
+			padding: 5px 10px;
+			border-radius: 5px;
+			outline: 1px solid grey;
+			cursor: pointer;
+			user-select: none;
+			color: #6e6e6e;
+			font-weight: 700;
+			overflow: hidden;
+			position: relative;
+		}
+
+		/*
+		.add-form-field::after{
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background: #0094ef70;
+			transform: translateX(-100%);
+			filter: invert(1);
+			transition: all 0.1s linear;
+		} */
+
+		.add-form-field:hover {
+			background-color: #f8f8f8;
+		}
+
+		.add-form-field:hover::after {
+			transform: translateX(0)
 		}
 
 		.form-builder-container {
@@ -174,6 +218,11 @@
 		</div>
 		<div class="form-builder-container">
 			<div class="form-builder">
+				<div class="form-builder-header">
+					<div class="add-form-field btn">
+						<span>Add +</span>
+					</div>
+				</div>
 
 				<div class="update-form btn"></div>
 			</div>
@@ -186,14 +235,14 @@
 
 
 	<script defer>
-
-
 		let formSchemaData
 		let globalSchemaProps
 
 		const jsonStructureDom = document.querySelector('.form-json')
 		const formBuilderContainer = document.querySelector('.form-builder-container')
 		const updateSchemaBtn = document.querySelector('.btn-update-schema')
+		const addFormFieldBtn = document.querySelector('.add-form-field')
+
 		const getSchemaInput = function(){
 			return jsonStructureDom.querySelector('textarea')
 		}
@@ -463,11 +512,48 @@
 			//addEventListeners
 			addEventListeners()
 
-			if(callback && typeof(callback) === "function"){
-				callback()
+			// if(callback && typeof(callback) === "function"){
+			// 	callback()
+			// }
+
+
+		}
+
+		function addFormInputs(schemaProp){
+
+
+			Array.from(document.querySelector('.form-builder').children).forEach(child=>{
+				if(child.className.includes('form-field')){
+					child.remove()
+				}
+			})
+			// return
+
+
+
+			//Sort inputs based on the propertyOrder property
+				const sortedProps = Object.fromEntries(Object.entries(schemaProp).sort(([,a],[,b])=>{
+				return a.propertyOrder - b.propertyOrder
+			}))
+
+			globalSchemaProps = sortedProps
+
+
+			//Add each input with each property of the schema
+			for (const [key, value] of Object.entries(globalSchemaProps)) {
+
+				//id foreach input created so we can change the schema state propreties
+				//schema properties in the globalSchemaProps will get an id that it's shared with the inputs created by them
+
+				if(key !== 'submit') {
+					value.id = createInputId(10)
+					createFormField(value)
+				}
+
 			}
 
-
+			//addEventListeners
+			addEventListeners()
 		}
 
 
@@ -591,6 +677,16 @@
 		}
 
 
+		//Add new fields
+
+		addFormFieldBtn.addEventListener('click', function(e){
+
+			globalSchemaProps['input'] = globalSchemaProps['city']
+
+			addFormInputs(globalSchemaProps)
+
+		})
+
 		//Update json schema
 
 		updateSchemaBtn.addEventListener('click', updateSchema)
@@ -642,9 +738,12 @@
 
 
 
-		createSurveyBuilder(function(){
-			console.log('it rendered')
-		})
+		// createSurveyBuilder(function(){
+		// 	console.log('it rendered')
+		// })
+
+		createSurveyBuilder()
+
 		displayFormStructure()
 
 

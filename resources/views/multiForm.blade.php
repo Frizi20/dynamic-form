@@ -72,6 +72,7 @@
 		.multi-form-container fieldset {
 			flex: 1;
 			border: none;
+			padding-bottom: 30px;
 
 		}
 
@@ -124,7 +125,7 @@
 		.form-buttons {
 			display: flex;
 			justify-content: space-between;
-			margin-top: 50px;
+			/* margin-top: 50px; */
 		}
 
 		.form-buttons div {
@@ -159,15 +160,18 @@
 							<option value="3">Cluj</option>
 						</select>
 					</div>
+
 				</div>
 
-				<div class="form-buttons">
-					<div class="prev-btn">Previous</div>
-					<div class="next-btn">Next</div>
-					{{-- <div class="-btn"></div> --}}
-				</div>
+
 
 			</fieldset>
+
+			<div class="form-buttons">
+				<div class="prev-btn">Previous</div>
+				<div class="next-btn">Next</div>
+				{{-- <div class="-btn"></div> --}}
+			</div>
 		</div>
 
 

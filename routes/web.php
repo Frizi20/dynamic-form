@@ -30,3 +30,6 @@ Route::get('/get-form-schema',[App\Http\Controllers\JsonFormsController::class,'
 Route::get('/survey-builder',[App\Http\Controllers\JsonFormsController::class,'buildSurvey']);
 
 Route::post('/update-schema',[App\Http\Controllers\JsonFormsController::class,'updateSchema']);
+
+
+Route::get('/multi-form',[App\Http\Controllers\JsonFormsController::class,'multiForm']);

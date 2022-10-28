@@ -68,5 +68,11 @@ class JsonFormsController extends Controller
 
 	}
 
+	public function multiForm()
+	{
+
+		return view('multiform');
+
+	}
 
 }

@@ -12,11 +12,15 @@
 
 
 	<style>
+
+
+		@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,700;0,800;1,400;1,500;1,600;1,700&family=Rubik:wght@300;400;500&display=swap');
+
 		* {
 			margin: 0;
 			padding: 0;
 			box-sizing: border-box;
-			font-family: sans-serif;
+			font-family: 'Open Sans', sans-serif;
 		}
 
 		body,
@@ -60,10 +64,12 @@
 			font-size: 35px;
 			font-family: "Segoe UI";
 			animation-direction: reverse; */
+			background: #f1f1f1;
+			border-radius: 10px;
 
-			height: 10px;
+
+			height: 5px;
 			/* margin: 50px 0px; */
-			background: rgb(255, 255, 255);
 			position: relative;
 			/* relative here */
 
@@ -124,6 +130,7 @@
 			color: #63a2cb;
 			margin-top: 20px;
 			text-align: center;
+			font-weight: 600;
 		}
 
 		.fs-input {
@@ -171,8 +178,9 @@
 			color: #666;
 			margin-top: 10px;
 			text-align: center;
-			font-family: system-ui;
+			/* font-family: system-ui; */
 			font-size: 15px;
+			font-weight: 500;
 		}
 
 		.form-buttons {
@@ -189,7 +197,7 @@
 			color: #0070bb;
 		}
 
-		.form-buttons .hide{
+		.form-buttons .hide {
 			display: none;
 		}
 	</style>
@@ -223,9 +231,9 @@
 
 			</div>
 			<div class="form-buttons">
-				<div class="prev-btn">Previous</div>
+				<div class="prev-btn">Prev</div>
 				<div class="next-btn">Next</div>
-				<div class="send-btn hide">Finish</div>
+				<div class="send-btn hide">Send</div>
 				{{-- <div class="-btn"></div> --}}
 			</div>
 		</div>
@@ -252,7 +260,7 @@
 		const schema = {
 			fields:[
 				{
-					title:'Ai mai furat la locul de munca?',
+					title:'Există o relaţie de comunicare şi colaborare între dvs. si şefii ierarhici?',
 					fieldOrder:1,
 					options: [
 						{
@@ -261,83 +269,83 @@
 						},
 						{
 							value:3,
-							label:'Nu'
+							label:'Partial'
 						},
 						{
 							value:5,
-							label:'Poate'
+							label:'NU'
 						}
 					]
 				},
 				{
-					title:'Ce faci?',
+					title:'Ca şi angajat, cunoaşteţi care sunt rezultatele aşteptate de şefii dvs. în privinţa activităţii pe care o desfăşuraţi?',
 					fieldOrder:2,
 					options: [
 						{
 							value:2,
-							label:'Bine'
+							label:'Da'
 						},
 						{
 							value:3,
-							label:'Rau'
+							label:'Partial'
 						},
 						{
 							value:5,
-							label:'Habar n-am'
+							label:'NU'
 						}
 					]
 				},
 				{
-					title:'Iti faci treaba?',
+					title:'Vă simţiţi în siguranţă în ceea ce priveşte dotarea materială cu echipamente, unelte, aparatură, necesare desfăşurării activităţii dvs.? Sunteţi mulţumit?',
 					fieldOrder:3,
 					options: [
 						{
 							value:2,
-							label:'Bine'
+							label:'Da'
 						},
 						{
 							value:3,
-							label:'Rau'
+							label:'Partial'
 						},
 						{
 							value:5,
-							label:'Habar n-am'
+							label:'NU'
 						}
 					]
 				},
 				{
-					title:'Iti faci treaba?',
+					title:' Consideraţi că la nivelul spitalului există o politică de promovare a angajaţilor?',
 					fieldOrder:4,
 					options: [
 						{
 							value:2,
-							label:'Bine'
+							label:'Da'
 						},
 						{
 							value:3,
-							label:'Rau'
+							label:'Partial'
 						},
 						{
 							value:5,
-							label:'Habar n-am'
+							label:'NU'
 						}
 					]
 				},
 				{
-					title:'Iti faci treaba?',
+					title:'Consideraţi că sunteţi suficient de bine informat cu privire la riscurile locului de munca?',
 					fieldOrder:5,
 					options: [
 						{
 							value:2,
-							label:'Bine'
+							label:'Da'
 						},
 						{
 							value:3,
-							label:'Rau'
+							label:'Partial'
 						},
 						{
 							value:5,
-							label:'Habar n-am'
+							label:'NU'
 						}
 					]
 				},
@@ -353,6 +361,7 @@
 			currSelect
 			outputSchema = []
 			createdFieldsDOM = []
+			allowNext = true
 
 			constructor(schema, fieldsLocationDOM){
 				//create copy of the fields
@@ -402,14 +411,23 @@
 				const outputField = this.outputSchema.find(field=> field.id == questionId)
 				const selectedValue = e.target.value
 
-				if(!outputField) throw new Error('field not found')
+				if(!outputField){
+					this.allowNext = false
+					throw new Error('field not found')
+				}
 
 				const valueAllowed = outputField.options.find(el=> el.value == selectedValue)
-				if(!valueAllowed) throw new Error('value not allowed')
+
+				if(!valueAllowed){
+					this.allowNext = false
+					throw new Error('value not allowed')
+				}
 
 				outputField.value = selectedValue
 
+				this.allowNext = true
 
+				console.log(this.outputSchema)
 			}
 
 
@@ -461,20 +479,30 @@
 			}
 
 			sendSurvey(e){
-				console.log(
-					this.outputSchema
-				)
+				const currSelect = this.createdFieldsDOM[this.currQuestion].querySelector('select')
+				if(!currSelect) return
+				const value = currSelect.value
+				if(!value) return
+				console.log(this.outputSchema)
 			}
 
 
 			nextQuestion(e) {
 				const nextBtn = e.target
 
+				console.log(this.allowNext)
+				//Check if next allowed
+				if(!this.allowNext){
+					throw new Error('Not allowed')
+					return
+				}
+
 				//Wait until option is selected
 				const currSelect = this.createdFieldsDOM[this.currQuestion].querySelector('select')
 
 				if(!currSelect.value) return
 
+				//Stop moving to the next question when we're at the last one
 				if(this.currQuestion >= this.nrQuestions -1) return
 
 				//Show SEND button and hide NEXT for the last question
@@ -484,10 +512,8 @@
 				}
 
 
-
 				this.currQuestion++
 
-				console.log()
 
 				//move UI to next question
 				this.goToQuestion(this.currQuestion)

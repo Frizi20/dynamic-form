@@ -68,10 +68,19 @@ class JsonFormsController extends Controller
 
 	}
 
+
+
 	public function multiForm()
 	{
 
 		return view('multiform');
+
+	}
+
+	public function surveyBuilder2()
+	{
+
+		return view('surveyBuilder2');
 
 	}
 

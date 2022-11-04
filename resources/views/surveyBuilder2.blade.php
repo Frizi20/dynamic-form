@@ -130,6 +130,7 @@
 			overflow: hidden;
 			/* clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); */
 			transition: font-size margin opacity padding max-height 0.3s linear;
+			padding-top: 30px;
 		}
 
 		.form-field.removing {
@@ -196,13 +197,33 @@
 		.field-actions {
 			position: absolute;
 			top: 0;
-			padding: 5px;
+			/* padding: 5px; */
 			right: 0;
+			display: flex;
+			/* align-items: center; */
+			/* width: 60px; */
+			justify-content: space-between;
+		}
+
+		.field-actions>div {
+			padding: 5px;
 		}
 
 		.field-actions .remove-input i {
 			cursor: pointer;
-			font-size: 18px;
+			/* font-size: 18px; */
+			vertical-align: middle;
+		}
+
+		.field-actions .edit-input i {
+			cursor: pointer;
+			font-size: 14.5px;
+			vertical-align: middle;
+		}
+
+		.field-actions .edit-input i:hover {
+			color: #1d9e28;
+
 		}
 
 		.field-actions .remove-input i:hover {
@@ -252,11 +273,13 @@
 				this.formBuilderDOM = document.querySelector('.form-builder')
 				this.addFormFieldBtn = document.querySelector('.add-form-field')
 
-				this.addFormFieldBtn.addEventListener('click', this._addField)
+				this.addFormFieldBtn.addEventListener('click', this._addNewFeild.bind(this))
 
-				this.allFields = schema
+				this.allFields = this._sortFields(schema)
 
 				this._createFields()
+
+				this._sortFields(this.allFields)
 			}
 
 			_createFields(){
@@ -272,13 +295,45 @@
 					//store all created inputs
 					this.allFieldsDOM.push(createdField)
 
-					//addEvent
+					//add delete option for the field
 					this._addDeleteEvent(createdField)
 
 				})
 			}
 
-			_addField(){
+			_sortFields(fields){
+				const sortedFields = fields.sort((a,b)=>{
+					return   a.fieldOrder - b.fieldOrder
+				})
+
+				return sortedFields
+			}
+
+			_addNewFeild(e){
+				const btnClicked = e.target.closest('.add-form-field')
+				if(!btnClicked) return
+				const newId = this._createInputId(10)
+				const newFieldOrder = this.allFields[this.allFields.length - 1]?.fieldOrder + 1
+
+				const fieldData = {
+					title:'nedefinit',
+					fieldOrder:newFieldOrder,
+					options:[],
+					id:newId
+				}
+
+				//Add new field to the dom
+				const createdNewField = this._createField(fieldData, newId)
+
+
+				//push new Dom to the dom fields list
+				this.allFieldsDOM.push(createdNewField)
+
+				//ad deete option for the new field
+				this._addDeleteEvent(createdNewField)
+
+				//add data to the state
+				this.allFields.push(fieldData)
 
 			}
 
@@ -311,17 +366,21 @@
 			_createField(field,id){
 
 				const html = `
-				<div class="form-field" data-input-id="${id}" draggable="false" >
+				<div class="form-field" data-input-id="${id}" draggable="true" >
 					<label class="field-label"> ${field.title} </label>
 					<div class="field-actions">
-						<span class="remove-input" data-input-id="${id}">
+						<div class="edit-input" data-input-id="${id}">
+							<i class="fas fa-pen"></i>
+						</div>
+						<div class="remove-input" data-input-id="${id}">
 							<i class="far fa-times-circle" aria-hidden="true"></i>
-						</span>
+						</div>
 					</div>
 					<div class="form-group">
-
-					<input type="string" class="form-control">
-
+						<input type="string" class="form-control">
+					</div>
+					<div class="edit-field">
+						${field.options.map()}
 					</div>
 				</div>`
 

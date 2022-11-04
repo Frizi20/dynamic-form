@@ -2,7 +2,7 @@ const jsonSchema = {
 	fields:[
 		{
 			title:'Există o relaţie de comunicare şi colaborare între dvs. si şefii ierarhici?',
-			fieldOrder:1,
+			fieldOrder:3,
 			options: [
 				{
 					value:2,
@@ -38,7 +38,7 @@ const jsonSchema = {
 		},
 		{
 			title:'Vă simţiţi în siguranţă în ceea ce priveşte dotarea materială cu echipamente, unelte, aparatură, necesare desfăşurării activităţii dvs.? Sunteţi mulţumit?',
-			fieldOrder:3,
+			fieldOrder:1,
 			options: [
 				{
 					value:2,

@@ -234,6 +234,21 @@
 		.form-field.hidden {
 			opacity: 0;
 		}
+		
+		.edit-field{
+			display: flex;
+			width: 100%;
+			height: 200px;
+			background-color: #fff;
+		}
+
+		.form-group.hidden{
+			display: none;
+		}
+
+		.field-label.hidden{
+			display: none;
+		}
 	</style>
 
 
@@ -298,6 +313,10 @@
 					//add delete option for the field
 					this._addDeleteEvent(createdField)
 
+					//add edit event
+
+					this._addEditEvent(createdField)
+
 				})
 			}
 
@@ -329,8 +348,12 @@
 				//push new Dom to the dom fields list
 				this.allFieldsDOM.push(createdNewField)
 
-				//ad deete option for the new field
+				//add deete option for the new field
 				this._addDeleteEvent(createdNewField)
+
+				//add edit option
+
+				this._addEditEvent(createdNewField)
 
 				//add data to the state
 				this.allFields.push(fieldData)
@@ -363,6 +386,11 @@
 
 			}
 
+			_addEditEvent(createdField){
+
+				
+			}
+
 			_createField(field,id){
 
 				const html = `
@@ -380,7 +408,7 @@
 						<input type="string" class="form-control">
 					</div>
 					<div class="edit-field">
-						${field.options.map()}
+						
 					</div>
 				</div>`
 

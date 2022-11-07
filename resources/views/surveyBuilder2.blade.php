@@ -26,6 +26,8 @@
 			background-color: #fff;
 			font-family: sans-serif;
 			font-family: 'Open Sans', sans-serif;
+			,
+			sans-serif;
 
 		}
 
@@ -152,6 +154,10 @@
 
 		}
 
+		.form-group.hidden {
+			display: none;
+		}
+
 		.form-builder .form-field:not(:first-child) {
 			margin-top: 20px;
 		}
@@ -173,7 +179,13 @@
 			user-select: none;
 			/* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
+			word-spacing: 1px;
+			letter-spacing: 0.5px;
 
+		}
+
+		.field-label.hidden {
+			display: none;
 		}
 
 		.form-control {
@@ -206,18 +218,18 @@
 		}
 
 		.field-actions>div {
-			padding: 5px;
+			padding: 0 9px;
 		}
 
 		.field-actions .remove-input i {
 			cursor: pointer;
-			/* font-size: 18px; */
+			font-size: 18px;
 			vertical-align: middle;
 		}
 
 		.field-actions .edit-input i {
 			cursor: pointer;
-			font-size: 14.5px;
+			font-size: 14px;
 			vertical-align: middle;
 		}
 
@@ -234,20 +246,154 @@
 		.form-field.hidden {
 			opacity: 0;
 		}
-		
-		.edit-field{
+
+		/* Edit field options */
+
+		.edit-field {
 			display: flex;
 			width: 100%;
-			height: 200px;
+			/* height: 200px; */
+			background-color: #fff;
+			display: none;
+			position: relative;
+			padding: 20px;
+			padding-bottom: 60px;
+		}
+
+		.edit-field.active {
+			display: block;
+		}
+
+		.form-group.hidden {
+			display: none;
+		}
+
+		.field-label.hidden {
+			display: none;
+		}
+
+		.edit-field-options,
+		.edit-field-title {
+			display: flex;
+			/* padding: 10px; */
+		}
+
+		.edit-field-title .description {
+			flex: 0 0 100px;
+			padding-top: 10px;
+		}
+
+		.edit-field-title .title {
+			flex: 1;
+			padding: 5px;
+		}
+
+
+		.edit-field-title textarea {
+			/* min-width: 100%; */
+			/* min-height: 100%; */
+			min-width: calc(100% - 10px);
+			max-width: calc(100% - 10px);
+			/* min-height: calc(100% - 10px); */
+			/* max-height: 70px; */
+			/* min-height: 70px; */
+			height: 80px;
+			border: 1px solid #c5c5c5;
+			font-family: 'Open Sans', sans-serif;
+			padding: 10px;
+			resize: vertical;
+			font-weight: 500;
+			color: #737373;
+			font-size: 14px;
+
+		}
+
+		.edit-field-options .options {
+			width: 100%;
+		}
+
+		.edit-field-options .description {
+			flex: 0 0 100px;
+		}
+
+		.edit-field-options .option {
+			flex: 1;
+			display: flex;
+		}
+
+		.edit-field-options .option:not(:first-child) {
+			margin-top: 10px !important;
+
+		}
+
+		.edit-field-options .option>div {
+			/* flex: 0 0 50%; */
+			padding: 0 5px;
+		}
+
+		.edit-field-options input {
+			width: 100%;
+			padding: 6px 12px;
+			border: 1px solid #c5c5c5;
 			background-color: #fff;
 		}
 
-		.form-group.hidden{
-			display: none;
+		.edit-field-options .remove-option {
+			flex: 0 0 0;
+			display: flex;
+			align-items: center;
+
+			justify-content: center;
 		}
 
-		.field-label.hidden{
-			display: none;
+		.edit-field-options .remove-option:hover {
+			cursor: pointer;
+			color: red;
+		}
+
+		.edit-field-options .label,
+		.edit-field-options .value {
+			flex: 0 0 49%;
+		}
+
+		.edit-field-options .option-actions {
+			position: relative;
+			text-align: right;
+			padding-top: 10px;
+		}
+
+		.edit-field-options .option-actions span {
+			display: inline-block;
+			margin-right: 10px;
+			padding: 2px 4px;
+			border: 1px solid #009dba;
+			border-radius: 5px;
+			font-size: 14px;
+			color: #009dba;
+			font-weight: 500;
+			cursor: pointer;
+		}
+
+		.close-options {
+			position: absolute;
+			/* left: 0; */
+			/* top: 0; */
+			left: 50%;
+			bottom: 0;
+			transform: translateX(-50%);
+			/* border: 1px solid #ff5959; */
+			padding: 2px 16px;
+			font-size: 15px;
+			font-weight: 500;
+			color: #737373;
+			bottom: 1px;
+			border-radius: 3px;
+			cursor: pointer;
+			border: none;
+			bottom: -2px;
+			background: whitesmoke;
+			bottom: -2px;
+			color: #505050;
 		}
 	</style>
 
@@ -317,6 +463,10 @@
 
 					this._addEditEvent(createdField)
 
+					//add delete option event
+
+					this._addDeleteOptionEvent(createdField)
+
 				})
 			}
 
@@ -364,6 +514,13 @@
 				createdField.querySelector('.remove-input').addEventListener('click', this._deleteField.bind(this))
 			}
 
+			_addDeleteOptionEvent(createdField){
+				createdField.querySelectorAll('.remove-option').forEach(delOption => {
+					delOption.addEventListener('click',function(){
+						console.log(this)
+					})
+				});
+			}
 
 
 			_deleteField(e){
@@ -388,7 +545,30 @@
 
 			_addEditEvent(createdField){
 
-				
+				createdField.querySelector('.edit-input').addEventListener('click', this._showEditModal.bind(this))
+				createdField.querySelector('.close-options').addEventListener('click', this._showEditModal.bind(this))
+
+
+			}
+
+			_showEditModal(e){
+				const btnClicked = e.target.closest('.edit-input')
+				if(!btnClicked) return
+				const id = btnClicked.dataset.inputId
+
+				const formField = document.querySelector(`.form-field[data-input-id="${id}"]`)
+				const input = formField.querySelector('.form-group')
+				const label = formField.querySelector('.field-label')
+				const editField = formField.querySelector('.edit-field')
+
+				// hide input and label and show the edit modal
+
+				input.classList.toggle('hidden')
+				label.classList.toggle('hidden')
+				editField.classList.toggle('active')
+
+
+				console.log(formField)
 			}
 
 			_createField(field,id){
@@ -401,14 +581,55 @@
 							<i class="fas fa-pen"></i>
 						</div>
 						<div class="remove-input" data-input-id="${id}">
-							<i class="far fa-times-circle" aria-hidden="true"></i>
+							<i class="fa fa-times" aria-hidden="true"></i>
 						</div>
 					</div>
 					<div class="form-group">
 						<input type="string" class="form-control">
 					</div>
 					<div class="edit-field">
-						
+						<div class="edit-field-title">
+							<div class="description">
+								Descriere
+							</div>
+							<div class="title">
+								<textarea spellcheck="false">${field.title}</textarea>
+
+							</div>
+						</div>
+						<div class="edit-field-options">
+							<div class="description">
+								Options
+							</div>
+							<div class="options">
+								${field.options.map((option,index,optionsArr ) =>{
+
+									const optionId = this._createInputId(10)
+
+									//Set option id to the schema
+									optionsArr[index][id] = optionId
+
+									return`<div class ="option" data-option-id="${optionId}">
+
+										<div class="label">
+											<input type="text" value="${option.label}">
+										</div>
+										<div class="value">
+											<input type="text" value="${option.value}">
+										</div>
+										<div class="remove-option" data-option-id="${optionId}">
+											<i class="fa fa-times" aria-hidden="true"></i>
+										</div>
+									</div>`
+								}).join('')}
+								<div class="option-actions">
+									<span> Add Option + </span>
+								</div>
+							</div>
+						</div>
+						<div class="close-options">
+							Close
+						</div>
 					</div>
 				</div>`
 

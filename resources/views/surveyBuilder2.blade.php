@@ -612,14 +612,16 @@
 
 					if(draggable !== this.draggedField){
 
-						if(((currElHeight + currElY - 30)> draggableX) &&
-							currElY + 25 < draggableX + draggableHeight){
+						if(i === 1){
+							console.log((currElY + currElHeight) > draggableY && currElY < draggableY + draggableHeight )
+						}
+						if(((currElHeight + currElY - 65)> draggableY) &&
+							currElY + 65 < draggableY + draggableHeight){
 
 								draggable.style.opacity = 0.3
 								// allDraggables.lastDraggedOverEl = draggable.draggedElement
 								// this.lastDragged = draggable.draggedElement
 								// draggable.draggedElement.style.opacity = 0.5
-								console.log('da')
 
 
 						}else{
@@ -939,7 +941,7 @@
 				let optionsIds = []
 
 				const html = `
-				<div class="form-field" data-input-id="${id}"  >
+				<div class="form-field" data-input-id="${id}" draggable="false">
 					<label class="field-label"> ${field.title} </label>
 					<div class="field-actions">
 						<div class="edit-input" data-input-id="${id}">

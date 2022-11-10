@@ -128,6 +128,8 @@
 			transition: font-size margin opacity padding max-height 0.3s linear;
 		}
 
+
+
 		.form-field.removing {
 			font-size: 0;
 			margin: 0 !important;

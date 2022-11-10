@@ -90,5 +90,41 @@ const jsonSchema = {
 				}
 			]
 		},
+		{
+			title:'Consideraţi că sunteţi suficient de bine informat cu privire la riscurile locului de munca?',
+			fieldOrder:5,
+			options: [
+				{
+					value:2,
+					label:'Da'
+				},
+				{
+					value:3,
+					label:'Partial'
+				},
+				{
+					value:5,
+					label:'NU'
+				}
+			]
+		},
+		{
+			title:'Consideraţi că sunteţi suficient de bine informat cu privire la riscurile locului de munca?',
+			fieldOrder:5,
+			options: [
+				{
+					value:2,
+					label:'Da'
+				},
+				{
+					value:3,
+					label:'Partial'
+				},
+				{
+					value:5,
+					label:'NU'
+				}
+			]
+		},
 	]
 }

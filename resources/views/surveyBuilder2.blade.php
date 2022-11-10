@@ -47,12 +47,31 @@
 			align-items: center;
 		}
 
+
 		.form-builder-container {
-			min-height: 500px;
-			width: 700px;
-			border: 1px solid #e4e4e4;
-			overflow: auto;
+			width: 750px;
+			/* border: 1px solid #e4e4e4; */
+			box-shadow: 5px 2px 20px 2px rgb(0 0 0 / 14%), -3px 2px 20px 5px rgb(0 0 0 / 12%), 0px 14px 15px -14px rgb(0 0 0 / 20%);
 			position: relative;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.form-builder-container .form-builder {
+			height: 700px;
+			overflow-y: auto;
+			padding: 20px 10px;
+			border: 1px solid #e4e4e4;
+
+		}
+
+		.form-builder::-webkit-scrollbar,
+		.form-builder::-webkit-scrollbar {
+			width: 5px;
+		}
+
+		.form-builder::-webkit-scrollbar-thumb {
+			background: #ababab;
 		}
 
 		.form-json {
@@ -67,6 +86,7 @@
 			height: 500px;
 			margin-right: 15px;
 			display: none;
+			overflow: hidden;
 			/* overflow-y: auto; */
 		}
 
@@ -87,6 +107,7 @@
 		.form-builder-header {
 			display: flex;
 			justify-content: flex-end;
+			margin-bottom: 20px;
 		}
 
 		.add-form-field {
@@ -101,6 +122,27 @@
 			position: relative;
 			position: sticky;
 			top: 0;
+		}
+
+		.save-schema {
+			margin-top: 20px;
+			text-align: center;
+		}
+
+		.save-schema span {
+			padding: 5px 10px;
+			border-radius: 5px;
+			outline: 1px solid grey;
+			cursor: pointer;
+			user-select: none;
+			color: #6e6e6e;
+			font-weight: 700;
+			overflow: hidden;
+			position: relative;
+			position: sticky;
+			top: 0;
+			width: fit-content;
+			margin: 0 auto;
 		}
 
 		/*
@@ -140,6 +182,11 @@
 			/* clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); */
 			transition: font-size margin opacity padding max-height 0.3s linear;
 			padding-top: 30px;
+		}
+
+		.form-field.over {
+			outline: 2px solid grey;
+			border-radius: 5px;
 		}
 
 		.form-field.removing {
@@ -212,6 +259,8 @@
 			margin-left: 5px;
 			display: block;
 			max-height: 300px;
+			pointer-events: none;
+
 			/* transition: max-height opacity 5s; */
 
 
@@ -352,7 +401,7 @@
 			resize: vertical;
 			font-weight: 500;
 			color: #737373;
-			font-size: 14px;
+			font-size: 17px;
 
 		}
 
@@ -458,15 +507,17 @@
 			<div class="btn-update-schema">Update</div>
 		</div>
 		<div class="form-builder-container">
+			<div class="form-builder-header">
+				<div class="add-form-field btn">
+					<span>Add +</span>
+				</div>
+			</div>
 			<div class="form-builder">
 
-				<div class="form-builder-header">
-					<div class="add-form-field btn">
-						<span>Add +</span>
-					</div>
-				</div>
-
 				<div class="update-form btn"></div>
+			</div>
+			<div class="save-schema btn">
+				<span>Save</span>
 			</div>
 		</div>
 	</div>
@@ -489,12 +540,16 @@
 			pointerY
 			fieldX
 			fieldY
+			lastHoveredOver
 
 			constructor(schema){
 				this.formBuilderDOM = document.querySelector('.form-builder')
 				this.addFormFieldBtn = document.querySelector('.add-form-field')
+				this.saveSchemaBtn = document.querySelector('.save-schema')
 
 				this.addFormFieldBtn.addEventListener('click', this._addNewFeild.bind(this))
+				this.saveSchemaBtn.addEventListener('click', this.saveShema.bind(this))
+
 
 				this.allFields = this._sortFields(schema)
 
@@ -503,6 +558,12 @@
 				this._sortFields(this.allFields)
 
 
+
+
+			}
+
+			saveShema(){
+				console.log(this.allFields)
 			}
 
 			_createFields(){
@@ -548,9 +609,12 @@
 			}
 
 			_addDraggingEvents(fieldDOM){
+				if(!this.mouseMoveEvent){
+					document.addEventListener('mousemove', this._moveEl.bind(this),true)
+					this.mouseMoveEvent = true
+				}
 				fieldDOM.addEventListener('mousedown', this._clickDown.bind(this), true)
-				document.addEventListener('mousemove', this._moveEl.bind(this),true)
-				document.addEventListener('mouseup', this._clickUp.bind(this), true)
+				fieldDOM.addEventListener('mouseup', this._clickUp.bind(this), true)
 			}
 
 			_clickDown(e){
@@ -560,11 +624,24 @@
 
 				const {width,height,left,top} = element.getBoundingClientRect()
 
-				this.fieldClone = element.cloneNode(true)
-				this.fieldClone.style.filter = 'blur(50px)'
+				// this.fieldClone = element.cloneNode(true)
+				// this.fieldClone.style.visibility = 'hidden'
 
-				element.insertAdjacentElement('beforebegin',this.fieldClone)
 
+				//Create dummy div that fills the space created by the dragged one
+				const dummyDiv = document.createElement('div')
+				this.dummyDiv = dummyDiv
+
+				dummyDiv.style.height = height + 20 + 'px' // +20 represents the element's margin-top
+				dummyDiv.style.width = width + 'px'
+
+				element.parentElement.insertBefore(dummyDiv, element.nextElementSibling)
+
+
+
+				// element.insertAdjacentElement('beforebegin',this.fieldClone)
+
+				// set dragged element to his inital position by fixed perspective
 				Object.assign(element.style, {
 					position:'fixed',
 					width:`${ width}px`,
@@ -584,11 +661,11 @@
 				this.draggedField = element
 
 
-				console.log(top)
 
 			}
 
 			_moveEl(e){
+
 				if(!this.fieldIsDragged) return
 
 				const moveX = (this.pointerX - e.clientX) * -1
@@ -612,20 +689,25 @@
 
 					if(draggable !== this.draggedField){
 
-						if(i === 1){
-							console.log((currElY + currElHeight) > draggableY && currElY < draggableY + draggableHeight )
-						}
+						// if(i === 1){
+						// 	console.log((currElY + currElHeight) > draggableY && currElY < draggableY + draggableHeight )
+						// }
 						if(((currElHeight + currElY - 65)> draggableY) &&
 							currElY + 65 < draggableY + draggableHeight){
 
-								draggable.style.opacity = 0.3
+								// draggable.style.opacity = 0.3
+								if(!draggable.className.includes('over')){
+									draggable.classList.add('over')
+									// draggable.style.background = 'red'
+									this.lastHoveredOver = draggable
+								}
 								// allDraggables.lastDraggedOverEl = draggable.draggedElement
 								// this.lastDragged = draggable.draggedElement
 								// draggable.draggedElement.style.opacity = 0.5
 
 
 						}else{
-							draggable.style.opacity = 1
+							draggable.classList.remove('over')
 						}
 
 					}
@@ -634,9 +716,11 @@
 			}
 
 			_clickUp(e){
-				// if(!e.target.className.includes('form-field')) return
+				if(!e.target.className.includes('form-field')) return
 				this.fieldIsDragged = false
 				if(!this.draggedField) return
+
+				//set the dragged element style to normal
 				Object.assign(this.draggedField.style,{
 					position:'relative',
 					width:'auto',
@@ -646,7 +730,48 @@
 					zIndex:0,
 					opacity:1
 				})
-				this.fieldClone.remove()
+
+				//remove dummy div
+				this.dummyDiv.remove()
+				// this.fieldClone.remove()
+
+				//remove style of the element hovered by the dragged one
+				if(this.lastHoveredOver){
+					const hoveredIsFirst = !this.lastHoveredOver.previousElementSibling.className.includes('form-field')
+					this.lastHoveredOver.classList.remove('over')
+
+					//place the dragged element behind the one that's hovered over
+					this.draggedField.parentNode.insertBefore(this.draggedField, hoveredIsFirst ? this.lastHoveredOver : this.lastHoveredOver.nextElementSibling)
+
+					//sync the order of the allFieldsDOM with the order in the new order DOM
+					const movedFieldIndex = this.allFieldsDOM.findIndex(field => field === this.draggedField)
+					const lastHoveredIndex = this.allFieldsDOM.findIndex(field => field === this.lastHoveredOver)
+
+					//sort the allFieldsDOM if the hovered element is the first
+					if(movedFieldIndex - lastHoveredIndex !== 1 || hoveredIsFirst){
+						this.allFieldsDOM.splice(movedFieldIndex,1)
+						this.allFieldsDOM.splice(lastHoveredIndex,0,this.draggedField)
+					}
+
+				}
+
+
+
+
+				// update the  fieldOrder property for every field element
+
+				this.allFieldsDOM.forEach((domField,index)=>{
+					const fieldId = domField.getAttribute('data-input-id')
+					const fieldToChange = this.allFields.find(field=> field.id == fieldId)
+					fieldToChange.fieldOrder = index + 1
+				})
+
+				this._sortFields(this.allFields)
+
+				console.log(this.allFields)
+
+				this.lastHoveredOver = undefined
+
 			}
 
 			_sortFields(fields){
@@ -714,6 +839,9 @@
 
 				//add update label event
 				this._addUpdateOptionLabel(createdNewField)
+
+				//add draggable functionality to every field
+				this._addDraggingEvents(createdNewField)
 
 			}
 
@@ -941,7 +1069,7 @@
 				let optionsIds = []
 
 				const html = `
-				<div class="form-field" data-input-id="${id}" draggable="false">
+				<div class="form-field" data-input-id="${id}" draggable="false" data-fld-${field.fieldOrder}>
 					<label class="field-label"> ${field.title} </label>
 					<div class="field-actions">
 						<div class="edit-input" data-input-id="${id}">

@@ -34,38 +34,39 @@ class JsonFormsController extends Controller
 	{
 		$schema = new FormSchema();
 
-		return response()->json($schema->first());
+		return response()->json($schema->all()[1]);
 	}
 
 
 
-	public function buildSurvey(){
+	public function buildSurvey()
+	{
 		return view('surveyBuilder');
 	}
 
 
 
-	public function updateSchema(Request $request){
+	public function updateSchema(Request $request)
+	{
 
 		$formId = $request->id;
 		$schemaData = $request->schemaData;
 
 
 
+
 		$formSchema = FormSchema::findOrFail($formId);
+
+
 		$updatedFormSchema = $formSchema->update([
 			'schema' => $schemaData
 		]);
 
 
-		if($updatedFormSchema) return response()->json([
+		if ($updatedFormSchema) return response()->json([
 			'status'  => 'ok',
 			'message' => 'Form Updated'
 		]);
-
-
-
-
 	}
 
 
@@ -74,14 +75,11 @@ class JsonFormsController extends Controller
 	{
 
 		return view('multiform');
-
 	}
 
 	public function surveyBuilder2()
 	{
 
 		return view('surveyBuilder2');
-
 	}
-
 }

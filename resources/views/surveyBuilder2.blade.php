@@ -291,10 +291,11 @@
 			top: 0;
 			/* padding: 5px; */
 			right: 0;
+			/* width: 100%; */
 			display: flex;
 			/* align-items: center; */
 			/* width: 60px; */
-			justify-content: space-between;
+			justify-content: end;
 		}
 
 		.field-actions>div {
@@ -321,6 +322,20 @@
 		.field-actions .remove-input i:hover {
 			color: #ff6464;
 
+		}
+
+		.input-nr {
+			/* background: white; */
+			position: absolute;
+			left: 15px;
+			top: 6px;
+			font-size: 15px;
+			font-size: 16px;
+			font-weight: 600;
+			font-family: sans-serif;
+			color: #5e5e5e;
+			user-select: none;
+			pointer-events: none;
 		}
 
 		.form-field.hidden {
@@ -542,13 +557,15 @@
 			fieldY
 			lastHoveredOver
 
+			saveCallback
+
 			constructor(schema){
 				this.formBuilderDOM = document.querySelector('.form-builder')
 				this.addFormFieldBtn = document.querySelector('.add-form-field')
 				this.saveSchemaBtn = document.querySelector('.save-schema')
 
 				this.addFormFieldBtn.addEventListener('click', this._addNewFeild.bind(this))
-				this.saveSchemaBtn.addEventListener('click', this.saveShema.bind(this))
+				this.saveSchemaBtn.addEventListener('click', this.getJsonSchema.bind(this))
 
 
 				this.allFields = this._sortFields(schema)
@@ -562,16 +579,22 @@
 
 			}
 
-			saveShema(){
-				console.log(this.allFields)
+			addSaveCallback(callback){
+				this.saveCallback = callback
+			}
+
+			getJsonSchema(){
+				const exportJSON = JSON.stringify({fields:this.allFields})
+				this.saveCallback(exportJSON)
+
 			}
 
 			_createFields(){
-				this.allFields.forEach(field => {
+				this.allFields.forEach((field, index) => {
 					const id = this._createInputId(10)
 
 					//Create DOM field with unique id to be synced with the allFieldsSchema
-					const createdField = this._createField(field, id)
+					const createdField = this._createField(field, id, index)
 
 					//update each field prop with the unique id in the input DOM dataset
 					field.id = id
@@ -610,11 +633,14 @@
 
 			_addDraggingEvents(fieldDOM){
 				if(!this.mouseMoveEvent){
-					document.addEventListener('mousemove', this._moveEl.bind(this),true)
+					window.addEventListener('mousemove', this._moveEl.bind(this),true)
 					this.mouseMoveEvent = true
 				}
+				if(!this.mouseUpEvent){
+					window.addEventListener('mouseup', this._clickUp.bind(this), true)
+					this.mouseUpEvent = true
+				}
 				fieldDOM.addEventListener('mousedown', this._clickDown.bind(this), true)
-				fieldDOM.addEventListener('mouseup', this._clickUp.bind(this), true)
 			}
 
 			_clickDown(e){
@@ -636,10 +662,6 @@
 				dummyDiv.style.width = width + 'px'
 
 				element.parentElement.insertBefore(dummyDiv, element.nextElementSibling)
-
-
-
-				// element.insertAdjacentElement('beforebegin',this.fieldClone)
 
 				// set dragged element to his inital position by fixed perspective
 				Object.assign(element.style, {
@@ -664,9 +686,23 @@
 
 			}
 
+			_scrollEl(el){
+				// el.scrollBy(0, -20)
+				console.log(el)
+			}
+
+			_addScrollInterval(el){
+				this.scrollInterval = setInterval(function(){
+					console.log('....')
+					// el.scrollBy(0, -20)
+				}, 1000);
+			}
+
 			_moveEl(e){
 
 				if(!this.fieldIsDragged) return
+
+				const fieldContainer = this.draggedField.parentElement
 
 				const moveX = (this.pointerX - e.clientX) * -1
 				const moveY = (this.pointerY - e.clientY) * -1
@@ -677,13 +713,45 @@
 				const elementCurrentX = this.elInitialX + moveX
 				const elementCurrentY = this.elInitialY + moveY
 				const {left:currElX,top:currElY,height:currElHeight,width:currElWidth} = this.draggedField.getBoundingClientRect()
-
+				const {top:fieldContainerTop, height:fieldContainerHeight} = fieldContainer.getBoundingClientRect()
 				this.draggedField.style.left = (elementCurrentX) + 'px'
 				this.draggedField.style.top = (elementCurrentY) + 'px'
 				// this.draggedField.style.position = 'fixed'
 				// this.draggedField.style.transform = currY - e.clientY
 
-				// this.draggedField.style.transform = 'translateX(-20px)'
+
+				//Scroll field up if the dragged element is hovered over
+				// if(currElY < fieldContainerTop){
+				// 	// fieldContainer.scrollBy(0, -20)
+				// 	// if(!this.scrollInterval){
+				// 	// 	this._addScrollInterval(fieldContainer)
+				// 	// 	console.log(this.scrollInterval)
+				// 	// }
+				// 	console.log(this.intervalUp)
+				// 	// this.intervalUp
+				// 	if(!this.intervalUp){
+
+				// 		const interval = setInterval(()=>{
+				// 			fieldContainer.scrollBy(0, -20)
+				// 		},500)
+
+				// 		this.intervalUp = interval
+				// 	}
+
+				// }
+
+				// //Scroll field down if the dragged element is hovered under
+				// if(currElY + currElHeight > fieldContainerHeight + fieldContainerTop){
+				// 	if(!this.interval){
+				// 		this.intervalDown = setInterval(()=>{
+				// 			fieldContainer.scrollBy(0, 20)
+				// 		},500)
+				// 	}
+				// 	// fieldContainer.scrollBy(0, 20)
+				// }
+
+
+				//Field collision logic
 				this.allFieldsDOM.map((draggable,i)=>{
 					const {left:draggableX,top:draggableY,height:draggableHeight,width:draggableWidth} = draggable.getBoundingClientRect()
 
@@ -692,8 +760,12 @@
 						// if(i === 1){
 						// 	console.log((currElY + currElHeight) > draggableY && currElY < draggableY + draggableHeight )
 						// }
-						if(((currElHeight + currElY - 65)> draggableY) &&
-							currElY + 65 < draggableY + draggableHeight){
+
+						// if(((currElHeight + currElY - 65)> draggableY) &&
+						// 	currElY + 65 < draggableY + draggableHeight){
+
+						if((( currElY + 65)> draggableY) &&
+						currElY + 65 < draggableY + draggableHeight){
 
 								// draggable.style.opacity = 0.3
 								if(!draggable.className.includes('over')){
@@ -716,7 +788,7 @@
 			}
 
 			_clickUp(e){
-				if(!e.target.className.includes('form-field')) return
+				// if(!e.target.className.includes('form-field')) return
 				this.fieldIsDragged = false
 				if(!this.draggedField) return
 
@@ -756,23 +828,32 @@
 				}
 
 
-
-
 				// update the  fieldOrder property for every field element
-
 				this.allFieldsDOM.forEach((domField,index)=>{
 					const fieldId = domField.getAttribute('data-input-id')
 					const fieldToChange = this.allFields.find(field=> field.id == fieldId)
 					fieldToChange.fieldOrder = index + 1
+					domField.querySelector('.input-nr').textContent = index + 1 + '.'
 				})
 
 				this._sortFields(this.allFields)
 
-				console.log(this.allFields)
+				console.log(this.draggedField)
 
 				this.lastHoveredOver = undefined
+				this.draggedField = undefined
+
+				if(this.intervalUp || this.intervalDown){
+					console.log('clearInterval')
+					clearInterval(this.intervalUp)
+					clearInterval(this.intervalDown)
+				}
 
 			}
+
+			// _updateElNumerotation(){
+			// 	domField.querySelector('.input-nr').textContent = index + 1 + '.'
+			// }
 
 			_sortFields(fields){
 				const sortedFields = fields.sort((a,b)=>{
@@ -793,16 +874,16 @@
 					fieldOrder:newFieldOrder || 1,
 					options:[
 						{
-							value:'valoare 1',
-							label:'raspuns 1'
+							value:'1',
+							label:'da'
 						},
 						{
-							value:'valoare 2',
-							label:'raspuns 2'
+							value:'2',
+							label:'nu'
 						},
 						{
-							value:'valoare 2',
-							label:'raspuns 3'
+							value:'3',
+							label:'partial'
 						}
 					],
 					id:newId
@@ -842,6 +923,13 @@
 
 				//add draggable functionality to every field
 				this._addDraggingEvents(createdNewField)
+
+				//Sroll field parent to bottom
+				createdNewField.parentElement.scrollTo({ top: createdNewField.parentElement.scrollHeight, behavior: 'smooth' })
+
+				//update field order
+				createdNewField.querySelector('.input-nr').textContent = newFieldOrder + '.'
+
 
 			}
 
@@ -1046,8 +1134,14 @@
 			}
 
 			_showEditModal(e){
-				const btnClicked = e.target.closest('.edit-input')
-				if(!btnClicked) return
+				const closeOptionsBtn = e.target.closest('.close-options')
+				const editInputBtn = e.target.closest('.edit-input')
+
+				if(!closeOptionsBtn && !editInputBtn) return
+				const btnClicked = closeOptionsBtn || editInputBtn
+
+				console.log(btnClicked)
+
 				const id = btnClicked.dataset.inputId
 
 				const formField = document.querySelector(`.form-field[data-input-id="${id}"]`)
@@ -1064,13 +1158,18 @@
 
 			}
 
-			_createField(field,id){
+			_createField(field,id, index){
 
 				let optionsIds = []
 
 				const html = `
 				<div class="form-field" data-input-id="${id}" draggable="false" data-fld-${field.fieldOrder}>
+
+					<div class="input-nr">
+							${index + 1 + '.'}
+						</div>
 					<label class="field-label"> ${field.title} </label>
+
 					<div class="field-actions">
 						<div class="edit-input" data-input-id="${id}">
 							<i class="fas fa-pen"></i>
@@ -1132,7 +1231,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="close-options">
+						<div class="close-options" data-input-id="${id}">
 							Close
 						</div>
 					</div>
@@ -1157,12 +1256,69 @@
 					}
 					return [...Array(randStringLength)].map(()=>hex[random()]).join('')
 
-				}
+			}
 
+		}
+
+		let formData
+
+
+		const getFormSchema = async function() {
+
+			try {
+				const res = await fetch('/get-form-schema')
+				if(!res?.ok) throw new Error('Schema could not be fetched!')
+				const data = await res.json()
+				return data
+
+			} catch (error) {
+				console.error(error)
 			}
 
 
-		const sb = new surveyBuilder(jsonSchema.fields)
+		}
+
+		const buildForm = async function(){
+			const data = await getFormSchema()
+			const fb = new surveyBuilder(JSON.parse(data.schema).fields)
+			formData = data
+
+			//add function that is triggered when the save btn is pressed
+			fb.addSaveCallback(updateFormSchema)
+
+		}
+
+
+		//update schema method
+		async function updateFormSchema(schema){
+			const response = await fetch('/update-schema', {
+					method: 'POST',
+					headers: {
+						'Accept': 'application/json',
+						'Content-Type': 'application/json',
+						'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
+						},
+					body: JSON.stringify({
+						id:formData.id,
+						schemaData:schema
+					})
+				});
+
+				const resData = await response.json();
+
+				if(resData.status === 'ok'){
+					formUpdatedNotification(resData.message)
+				}
+		}
+
+		function formUpdatedNotification(message){
+			alert(message)
+		}
+
+		buildForm()
+
+
+
 
 	</script>
 

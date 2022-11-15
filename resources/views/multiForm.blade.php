@@ -12,8 +12,6 @@
 
 
 	<style>
-
-
 		@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,700;0,800;1,400;1,500;1,600;1,700&family=Rubik:wght@300;400;500&display=swap');
 
 		* {
@@ -552,9 +550,34 @@
 			}
 		}
 
-		const surveyBuilder = new SurveyBuilder(schema, slider)
 
 
+
+		const getFormSchema = async function() {
+
+			try {
+				const res = await fetch('/get-form-schema')
+				if(!res?.ok) throw new Error('Schema could not be fetched!')
+				const data = await res.json()
+				console.log(JSON.parse(data.schema))
+				// return data
+				return JSON.parse(data.schema)
+				// return data
+
+			} catch (error) {
+				console.error(error)
+			}
+
+
+		}
+
+		const buildForm = async function () {
+			const schema = await getFormSchema()
+			const surveyBuilder = new SurveyBuilder(schema, slider)
+
+		}
+
+		buildForm()
 
 		//slider navigation
 		// document.querySelector('.form-buttons').addEventListener('click',(e)=>{
